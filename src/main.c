@@ -47,12 +47,9 @@ int main(void) {
   fclose(cpuinfo);
 
   FILE *meminfo = fopen("/proc/meminfo", "r");
-  char total_memory[256];
-  char free_memory[256];
-  char available_memory[256];
-  int total_memint;
-  int free_memint;
-  int available_memint;
+  float total_memint;
+  float free_memint;
+  float available_memint;
   if (meminfo == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
@@ -60,23 +57,41 @@ int main(void) {
 
   while (fgets(line, sizeof(line), meminfo) != NULL) {
     if (strstr(line, "MemTotal") != NULL) {
+      char total_memory[256];
       get_value(line, total_memory, sizeof(total_memory));
-      total_memint = atoi(total_memory);
+      total_memint = (float)atoi(total_memory) / 1024;
     }
     if (strstr(line, "MemFree") != NULL) {
+      char free_memory[256];
       get_value(line, free_memory, sizeof(free_memory));
-      free_memint = atoi(free_memory);
+      free_memint = (float)atoi(free_memory) / 1024;
     }
     if (strstr(line, "MemAvailable") != NULL) {
+      char available_memory[256];
       get_value(line, available_memory, sizeof(available_memory));
-      available_memint = atoi(available_memory);
+      available_memint = (float)atoi(available_memory) / 1024;
     }
   }
+
+  fclose(meminfo);
+
+  float used_memory = ((total_memint - available_memint) / total_memint) * 100;
   printf("CPU: %s\n", model);
   printf("Cores: %s\n", cores);
   printf("Threads: %d\n", threads);
-  printf("Total Memory: %d\n", total_memint);
-  printf("Free Memory: %d\n", free_memint);
-  printf("Available Memory: %d\n", available_memint);
+  if (total_memint >= 1024) {
+    total_memint = (total_memint / 1024);
+    printf("Total Memory: %.2f GiB\n", total_memint);
+  } else {
+    printf("Total Memory: %d MiB\n", (int)total_memint);
+  }
+  if (free_memint >= 1024) {
+    free_memint = (free_memint / 1024);
+    printf("Free Memory: %.2f GiB\n", free_memint);
+  } else {
+    printf("Free Memory: %d MiB\n", (int)free_memint);
+  }
+  printf("Used Memory: %d%%\n", (int)used_memory);
+
   return EXIT_SUCCESS;
 }

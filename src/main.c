@@ -50,7 +50,9 @@ int main(void) {
   char total_memory[256];
   char free_memory[256];
   char available_memory[256];
-
+  int total_memint;
+  int free_memint;
+  int available_memint;
   if (meminfo == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
@@ -59,20 +61,22 @@ int main(void) {
   while (fgets(line, sizeof(line), meminfo) != NULL) {
     if (strstr(line, "MemTotal") != NULL) {
       get_value(line, total_memory, sizeof(total_memory));
+      total_memint = atoi(total_memory);
     }
     if (strstr(line, "MemFree") != NULL) {
-      get_value(line, free_memory, sizeof(total_memory));
+      get_value(line, free_memory, sizeof(free_memory));
+      free_memint = atoi(free_memory);
     }
     if (strstr(line, "MemAvailable") != NULL) {
-      get_value(line, available_memory, sizeof(total_memory));
+      get_value(line, available_memory, sizeof(available_memory));
+      available_memint = atoi(available_memory);
     }
   }
-
   printf("CPU: %s\n", model);
   printf("Cores: %s\n", cores);
   printf("Threads: %d\n", threads);
-  printf("Total Memory: %s\n", total_memory);
-  printf("Free Memory: %s\n", free_memory);
-  printf("Available Memory: %s \n", available_memory);
+  printf("Total Memory: %d\n", total_memint);
+  printf("Free Memory: %d\n", free_memint);
+  printf("Available Memory: %d\n", available_memint);
   return EXIT_SUCCESS;
 }

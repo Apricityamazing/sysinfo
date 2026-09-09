@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+// Add uptime support
 typedef struct {
   char model[256];
   char cores[8];
   int threads;
+  int uptime;
   float total_memory;
   float free_memory;
   float available_memory;
@@ -83,6 +84,14 @@ int main(void) {
       ((info.total_memory - info.available_memory) / info.total_memory) * 100;
   fclose(meminfo);
 
+  FILE *uptime = fopen("/proc/sysinfo", "r");
+  if (uptime == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  fclose(uptime);
+
   printf("CPU: %s\n", info.model);
   printf("Cores: %s\n", info.cores);
   printf("Threads: %d\n", info.threads);
@@ -100,5 +109,5 @@ int main(void) {
   }
   printf("Used Memory: %d%%\n", (int)used_memory);
 
-  return EXIT_SUCCESS;
+  exit(EXIT_SUCCESS);
 }

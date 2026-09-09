@@ -3,11 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-void get_value(char *line, char *output, size_t output_size) {
-  char line_copy[256];
-  strcpy(line_copy, line);
+typedef struct {
+  char model[256];
+  char cores[8];
+  int threads;
+  float total_memory;
+  float free_memory;
+  float available_memory;
+  float used_memory;
+} sysinfo;
 
-  char *ptr = line_copy;
+void get_value(char *buffer, char *output, size_t output_size) {
+  char *ptr = buffer;
   // Removes leading model name :
   strsep(&ptr, ":");
   char *value = strsep(&ptr, "\n");
@@ -22,74 +29,74 @@ void get_value(char *line, char *output, size_t output_size) {
 }
 
 int main(void) {
+  sysinfo info;
+  memset(&info, 0,
+         sizeof(info)); // Zeros out all values so no garbage values are set
+
   FILE *cpuinfo = fopen("/proc/cpuinfo", "r");
-  char line[256];
-  char model[256];
-  char cores[8];
-  int threads = 0;
+  char buffer[256];
+
   if (cpuinfo == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
   }
 
-  while (fgets(line, sizeof(line), cpuinfo) != NULL) {
-    if (strstr(line, "model name") != NULL) {
-      get_value(line, model, sizeof(model));
+  while (fgets(buffer, sizeof(buffer), cpuinfo) != NULL) {
+    if (strstr(buffer, "model name") != NULL) {
+      get_value(buffer, info.model, sizeof(info.model));
     }
-    if (strstr(line, "processor") != NULL) {
-      threads++;
+    if (strstr(buffer, "processor") != NULL) {
+      info.threads++;
     }
-    if (strstr(line, "cpu cores") != NULL) {
-      get_value(line, cores, sizeof(cores));
+    if (strstr(buffer, "cpu cores") != NULL) {
+      get_value(buffer, info.cores, sizeof(info.cores));
     }
   }
 
   fclose(cpuinfo);
 
   FILE *meminfo = fopen("/proc/meminfo", "r");
-  float total_memint;
-  float free_memint;
-  float available_memint;
   if (meminfo == NULL) {
     perror("fopen");
     exit(EXIT_FAILURE);
   }
 
-  while (fgets(line, sizeof(line), meminfo) != NULL) {
-    if (strstr(line, "MemTotal") != NULL) {
+  while (fgets(buffer, sizeof(buffer), meminfo) != NULL) {
+    if (strstr(buffer, "MemTotal") != NULL) {
       char total_memory[256];
-      get_value(line, total_memory, sizeof(total_memory));
-      total_memint = (float)atoi(total_memory) / 1024;
+      get_value(buffer, total_memory, sizeof(total_memory));
+      info.total_memory = (float)atoi(total_memory) / 1024;
     }
-    if (strstr(line, "MemFree") != NULL) {
+    if (strstr(buffer, "MemFree") != NULL) {
       char free_memory[256];
-      get_value(line, free_memory, sizeof(free_memory));
-      free_memint = (float)atoi(free_memory) / 1024;
+      get_value(buffer, free_memory, sizeof(free_memory));
+      info.free_memory = (float)atoi(free_memory) / 1024;
     }
-    if (strstr(line, "MemAvailable") != NULL) {
+    if (strstr(buffer, "MemAvailable") != NULL) {
       char available_memory[256];
-      get_value(line, available_memory, sizeof(available_memory));
-      available_memint = (float)atoi(available_memory) / 1024;
+      get_value(buffer, available_memory, sizeof(available_memory));
+      info.available_memory = (float)atoi(available_memory) / 1024;
     }
   }
 
+  float used_memory =
+      ((info.total_memory - info.available_memory) / info.total_memory) * 100;
   fclose(meminfo);
 
-  float used_memory = ((total_memint - available_memint) / total_memint) * 100;
-  printf("CPU: %s\n", model);
-  printf("Cores: %s\n", cores);
-  printf("Threads: %d\n", threads);
-  if (total_memint >= 1024) {
-    total_memint = (total_memint / 1024);
-    printf("Total Memory: %.2f GiB\n", total_memint);
+  printf("CPU: %s\n", info.model);
+  printf("Cores: %s\n", info.cores);
+  printf("Threads: %d\n", info.threads);
+  if (info.total_memory >= 1024) {
+    info.total_memory = (info.total_memory / 1024);
+    printf("Total Memory: %.2f GiB\n", info.total_memory);
   } else {
-    printf("Total Memory: %d MiB\n", (int)total_memint);
+    printf("Total Memory: %d MiB\n", (int)info.total_memory);
   }
-  if (free_memint >= 1024) {
-    free_memint = (free_memint / 1024);
-    printf("Free Memory: %.2f GiB\n", free_memint);
+  if (info.free_memory >= 1024) {
+    info.free_memory = (info.free_memory / 1024);
+    printf("Free Memory: %.2f GiB\n", info.free_memory);
   } else {
-    printf("Free Memory: %d MiB\n", (int)free_memint);
+    printf("Free Memory: %d MiB\n", (int)info.free_memory);
   }
   printf("Used Memory: %d%%\n", (int)used_memory);
 

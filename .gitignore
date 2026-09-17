@@ -1,2 +1,4 @@
 build
 sysinfo
+compile_commands.json
+vgcore.*

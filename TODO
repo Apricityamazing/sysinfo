@@ -1,0 +1,1 @@
+Change get_value.c and get_value.h to find_value, and consolidate code for finding all the different values into one multipurpose function.

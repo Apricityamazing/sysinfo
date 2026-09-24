@@ -16,7 +16,8 @@ int main(void) {
   free(cpu->model);
   printf("Cores: %s\n", cpu->cores);
   free(cpu->cores);
-  printf("Threads: %d\n", cpu->threads);
+  printf("Threads: %s\n", cpu->threads);
+  free(cpu->threads);
   if (memory->total_memory >= 1024) {
     printf("Total Memory: %.2f GiB\n", (memory->total_memory / 1024));
   } else {

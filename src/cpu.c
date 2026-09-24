@@ -13,7 +13,7 @@ CPUINFO *get_cpu(void) {
       create_keyvaluepair("processor", SEARCH_COUNT),
   };
 
-  uint8_t num_attributes = 3;
+  uint8_t num_attributes = sizeof(attributes) / sizeof(KeyValuePair *);
 
   find_values("/proc/cpuinfo", num_attributes, attributes);
 

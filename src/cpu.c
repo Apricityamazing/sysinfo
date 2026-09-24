@@ -24,16 +24,21 @@ CPUINFO *get_cpu(void) {
       }
       strcpy(cpu->model, attributes[i]->value);
       destroy_keyvaluepair(attributes[i]);
+      continue;
     } else if (strcmp(attributes[i]->key, "cpu cores") == 0) {
       if (attributes[i]->value != NULL) {
         cpu->cores = realloc(cpu->cores, strlen(attributes[i]->value) + 1);
       }
       cpu->cores = strcpy(cpu->cores, attributes[i]->value);
       destroy_keyvaluepair(attributes[i]);
+      continue;
     } else if (strcmp(attributes[i]->key, "processor") == 0) {
-      cpu->threads = realloc(cpu->threads, strlen(attributes[i]->value) + 1);
+      if (attributes[i]->value != NULL) {
+        cpu->threads = realloc(cpu->threads, strlen(attributes[i]->value) + 1);
+      }
       strcpy(cpu->threads, attributes[i]->value);
       destroy_keyvaluepair(attributes[i]);
+      continue;
     }
   }
   return cpu;

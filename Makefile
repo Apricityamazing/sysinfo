@@ -26,7 +26,7 @@ clean :
 		rm -r $(BUILD_DIR) $(TARGET)
 
 .PHONY : debug
-debug : CFLAGS += -g -O0
+debug : CFLAGS += -g -O0 -fsanitize=address,undefined
 debug : $(OBJECTS) $(TARGET)
 
 

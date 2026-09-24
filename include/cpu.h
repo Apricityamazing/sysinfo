@@ -4,7 +4,7 @@
 typedef struct {
   char *model;
   char *cores;
-  u_int8_t threads;
+  char *threads;
 } CPUINFO;
 
 CPUINFO *get_cpu(void);

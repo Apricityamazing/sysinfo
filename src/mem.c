@@ -9,9 +9,9 @@
 MEMINFO *get_mem(void) {
   MEMINFO *memory = calloc(1, sizeof(MEMINFO));
   KeyValuePair *attributes[] = {
-      create_keyvaluepair("MemTotal", SEARCH_FIRST),
-      create_keyvaluepair("MemFree", SEARCH_FIRST),
-      create_keyvaluepair("MemAvailable", SEARCH_FIRST),
+      create_keyvaluepair("MemTotal", SEARCH_FIRST, NULL),
+      create_keyvaluepair("MemFree", SEARCH_FIRST, NULL),
+      create_keyvaluepair("MemAvailable", SEARCH_FIRST, NULL),
   };
 
   uint8_t num_attributes = sizeof(attributes) / sizeof(KeyValuePair *);

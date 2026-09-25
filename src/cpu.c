@@ -4,19 +4,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+void destroy_cpu(CPUINFO *cpu) {
+  free(cpu->model);
+  free(cpu->threads);
+  free(cpu->cores);
+  free(cpu);
+}
+
 CPUINFO *get_cpu(void) {
   CPUINFO *cpu = calloc(1, sizeof(CPUINFO));
 
   KeyValuePair *attributes[] = {
-      create_keyvaluepair("model name", SEARCH_FIRST),
-      create_keyvaluepair("cpu cores", SEARCH_FIRST),
-      create_keyvaluepair("processor", SEARCH_COUNT),
+      create_keyvaluepair("model name", SEARCH_FIRST, NULL),
+      create_keyvaluepair("cpu cores", SEARCH_FIRST, NULL),
+      create_keyvaluepair("processor", SEARCH_COUNT, NULL),
   };
 
   uint8_t num_attributes = sizeof(attributes) / sizeof(KeyValuePair *);
-
   find_values("/proc/cpuinfo", num_attributes, attributes);
-
   for (int i = 0; i < num_attributes; i++) {
     if (strcmp(attributes[i]->key, "model name") == 0) {
       if (attributes[i]->value != NULL) {
@@ -29,7 +34,7 @@ CPUINFO *get_cpu(void) {
       if (attributes[i]->value != NULL) {
         cpu->cores = realloc(cpu->cores, strlen(attributes[i]->value) + 1);
       }
-      cpu->cores = strcpy(cpu->cores, attributes[i]->value);
+      strcpy(cpu->cores, attributes[i]->value);
       destroy_keyvaluepair(attributes[i]);
       continue;
     } else if (strcmp(attributes[i]->key, "processor") == 0) {

@@ -8,4 +8,5 @@ typedef struct {
 } CPUINFO;
 
 CPUINFO *get_cpu(void);
+void destroy_cpu(CPUINFO *cpu);
 #endif

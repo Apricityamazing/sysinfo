@@ -17,16 +17,44 @@ typedef struct {
 } KeyValuePairs;
 */
 
-KeyValuePair *create_keyvaluepair(const char *key, SearchMode mode) {
+KeyValuePair *create_keyvaluepair(const char *key, SearchMode mode,
+                                  const char *string) {
   KeyValuePair *kvp = calloc(1, sizeof(KeyValuePair));
   kvp->key = key;
   kvp->mode = mode;
+  kvp->string = string;
   return kvp;
 }
 
 void destroy_keyvaluepair(KeyValuePair *keyvaluepair) {
   free(keyvaluepair->value);
   free(keyvaluepair);
+}
+
+char *search_beforestring(char *filepath, char *buffer, size_t bufsize,
+                          const char *key, const char *string) {
+  FILE *file = fopen(filepath, "r");
+  if (file == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
+  while (fgets(buffer, bufsize, file) != NULL) {
+    char *match = strstr(buffer, key);
+    if (match) {
+      char *key_removed = match + strlen(key);
+      char *value = strsep(&key_removed, string);
+      if (value != NULL) {
+        while (*value == ' ' || *value == '\t') {
+          value++;
+        }
+      }
+      char *output = malloc(strlen(value) + 1);
+      strcpy(output, value);
+      return output;
+    }
+  }
+  return NULL;
 }
 
 char *search_first(char *filepath, char *buffer, size_t bufsize,
@@ -92,6 +120,11 @@ void find_values(char *filepath, int num_pairs, KeyValuePair *keys[]) {
     case SEARCH_COUNT:
       found_value =
           search_count(filepath, buffer, sizeof(buffer), keys[i]->key);
+      keys[i]->value = found_value;
+      break;
+    case SEARCH_BEFORESTRING:
+      found_value = search_beforestring(filepath, buffer, sizeof(buffer),
+                                        keys[i]->key, keys[i]->string);
       keys[i]->value = found_value;
       break;
     default:

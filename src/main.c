@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "mem.h"
 #include "uptime.h"
+#include "version.h"
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdcountof.h>
@@ -12,12 +13,10 @@ int main(void) {
   MEMINFO *memory = get_mem();
   CPUINFO *cpu = get_cpu();
   char *uptime = get_uptime();
+  char *version = get_version();
   printf("CPU: %s\n", cpu->model);
-  free(cpu->model);
   printf("Cores: %s\n", cpu->cores);
-  free(cpu->cores);
   printf("Threads: %s\n", cpu->threads);
-  free(cpu->threads);
   if (memory->total_memory >= 1024) {
     printf("Total Memory: %.2f GiB\n", (memory->total_memory / 1024));
   } else {
@@ -30,9 +29,11 @@ int main(void) {
   }
   printf("Used Memory: %d%%\n", (int)memory->used_memory);
   printf("Uptime: %s\n", uptime);
+  printf("Version: %s\n", version);
 
-  free(cpu);
+  destroy_cpu(cpu);
   free(memory);
   free(uptime);
+  free(version);
   exit(EXIT_SUCCESS);
 }
